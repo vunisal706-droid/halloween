@@ -1,4 +1,4 @@
-const CACHE = 'escape-halloween-v4';
+const CACHE = 'escape-halloween-v5';
 const CORE = ['./', 'index.html', 'data.js', 'art.js', 'manifest.json', 'icon-192.png', 'icon-512.png', 'logo.jpg', 'img/cole-calabazas.jpg', 'img/cole-brujas.jpg', 'img/cole-cementerio.jpg', 'fonts/creepster-latin-400-normal.woff2', 'fonts/henny-penny-latin-400-normal.woff2', 'fonts/fredoka-latin-400-normal.woff2', 'fonts/fredoka-latin-500-normal.woff2', 'fonts/fredoka-latin-600-normal.woff2', 'fonts/fredoka-latin-700-normal.woff2'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });

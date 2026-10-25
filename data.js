@@ -270,6 +270,71 @@ const ESCAPES = [
 ];
 
 /* Genera los 5 retos de una partida (1-50) */
+/* ===========================================================
+   INFANTIL (3, 4 y 5 años): sin leer — todo con dibujos y voz
+   =========================================================== */
+const COLORES = { naranja: '#f97316', morado: '#7c3aed', verde: '#22c55e', negro: '#1f1235', amarillo: '#facc15', rojo: '#ef4444', azul: '#3b82f6', blanco: '#ffffff' };
+const sw = c => `<span class="sw" style="background:${COLORES[c]}"></span>`;
+const FORMAS = {
+  círculo: '<svg viewBox="0 0 60 60" class="shp"><circle cx="30" cy="30" r="24" fill="#f97316" stroke="#2b1747" stroke-width="4"/></svg>',
+  cuadrado: '<svg viewBox="0 0 60 60" class="shp"><rect x="7" y="7" width="46" height="46" rx="4" fill="#7c3aed" stroke="#2b1747" stroke-width="4"/></svg>',
+  triángulo: '<svg viewBox="0 0 60 60" class="shp"><path d="M30 5 L56 53 H4z" fill="#22c55e" stroke="#2b1747" stroke-width="4" stroke-linejoin="round"/></svg>',
+  rectángulo: '<svg viewBox="0 0 60 60" class="shp"><rect x="3" y="16" width="54" height="28" rx="4" fill="#facc15" stroke="#2b1747" stroke-width="4"/></svg>'
+};
+const PIC = k => `<span class="pic">${ART[k]}</span>`;
+const SER_ICONS = ['pumpkin', 'ghost', 'bat', 'candy', 'skull', 'cat'];
+const RAROS = [['🍦', 'el helado'], ['⚽', 'la pelota'], ['🏖️', 'la playa'], ['🌻', 'el girasol'], ['🚗', 'el coche']];
+const ANIMALES = [['cat', 'el GATO', 'miau'], ['bat', 'el MURCIÉLAGO', ''], ['spider', 'la ARAÑA', '']];
+const VOCAL_PIC = [['A', '🕷️', 'ARAÑA'], ['E', '🧹', 'ESCOBA'], ['O', '👁️', 'OJO'], ['U', '🍇', 'UVAS'], ['I', '🏝️', 'ISLA']];
+const CONTAR_ICONS = [['pumpkin', 'calabazas', 1], ['ghost', 'fantasmas'], ['bat', 'murciélagos'], ['candy', 'caramelos'], ['cat', 'gatos'], ['skull', 'calaveras', 1]];
+
+function infantil(edad) {
+  const max = { 3: 3, 4: 5, 5: 9 }[edad], nOp = { 3: 3, 4: 3, 5: 4 }[edad];
+  /* pregunta de contar con botones de números */
+  const contar = R => { const [ic, nom, fem] = R.pick(CONTAR_ICONS), n = R.i(1, max), cu = fem ? 'Cuántas' : 'Cuántos', lo = fem ? 'Cuéntalas' : 'Cuéntalos';
+    let ops = Array.from({ length: max }, (_, k) => k + 1); if (ops.length > nOp) { ops = R.shuffle(ops.filter(x => x !== n)).slice(0, nOp - 1).concat(n).sort((a, b) => a - b); }
+    return { q: `¿${cu} ${nom} hay? ¡${lo}!`, tipo: 'opc', a: String(n), op: ops.map(String), lab: Object.fromEntries(ops.map(o => [String(o), `<b class="numop">${o}</b>`])), visual: { icon: ic, n }, voz: `¿${cu} ${nom} hay? ${lo} con el dedo.` }; };
+  const sec = R => contar(R);
+  const pics = (R, q, a, otras, lab, voz) => ({ q, tipo: 'opc', a, op: R.shuffle([a, ...otras]), lab, voz: voz || q });
+  return {
+    id: 'i' + edad, ciclo: 'inf', edad, area: 'infantil', personaje: 'ghost', color: { 3: '#f97316', 4: '#22c55e', 5: '#3b82f6' }[edad], voz: true,
+    titulo: { 3: 'Bu, el fantasma dormilón', 4: 'Bu y las calabazas perdidas', 5: 'Bu y el castillo de los caramelos' }[edad],
+    historia: { 3: 'Bu es un fantasma pequeñito que se ha quedado dormido dentro de una calabaza. ¡Y la calabaza tiene un candado! Vamos a jugar a 5 juegos para despertarlo. Cada juego nos da un número mágico.',
+      4: 'Bu, el fantasma más simpático del cole, ha perdido sus calabazas mágicas. Están guardadas en un baúl con candado. Si superamos los 5 juegos, conseguiremos los números para abrirlo.',
+      5: 'Bu quiere entrar en el castillo de los caramelos, pero la puerta tiene un candado de 5 números. ¡Ayudémosle! En cada juego encontraremos un número mágico.' }[edad],
+    final: '¡Lo habéis conseguido! Bu da volteretas de alegría y os da las gracias con un abrazo fantasmal muy suave. ¡Sois unos campeones de Halloween!',
+    build(R) {
+      const cols = { 3: ['naranja', 'morado', 'verde', 'amarillo'], 4: ['naranja', 'morado', 'verde', 'negro', 'amarillo', 'rojo'], 5: Object.keys(COLORES) }[edad];
+      const fs = { 3: ['círculo', 'cuadrado'], 4: ['círculo', 'cuadrado', 'triángulo'], 5: ['círculo', 'cuadrado', 'triángulo', 'rectángulo'] }[edad];
+      const colQ = () => { const c = R.sample(cols, 3); return pics(R, `Toca el color ${c[0].toUpperCase()}`, c[0], c.slice(1), Object.fromEntries(c.map(x => [x, sw(x)]))); };
+      const formQ = () => { const f = R.sample(fs, Math.min(3, fs.length)); return pics(R, `Toca el ${f[0].toUpperCase()}`, f[0], f.slice(1), Object.fromEntries(f.map(x => [x, FORMAS[x]]))); };
+      const sizeQ = () => { const big = R.f() < .5, ic = R.pick(['pumpkin', 'ghost', 'candy']); const L = { grande: `<span class="pic" style="width:90px">${ART[ic]}</span>`, pequeño: `<span class="pic" style="width:42px">${ART[ic]}</span>` };
+        return pics(R, `Toca el dibujo ${big ? 'GRANDE' : 'PEQUEÑO'}`, big ? 'grande' : 'pequeño', [big ? 'pequeño' : 'grande'], L); };
+      const serieQ = () => { const [a, b, c] = R.sample(SER_ICONS, 3); const pat = edad === 5 ? [a, b, c, a, b] : [a, b, a, b, a]; const ans = edad === 5 ? c : b; const ops = edad === 5 ? [c, a, b] : [b, a, c];
+        return Object.assign(pics(R, '¿Qué dibujo va después?', ans, ops.filter(x => x !== ans), Object.fromEntries(ops.map(x => [x, PIC(x)])), '¿Qué dibujo va después? Mira la fila.'),
+          { html: `<div class="serie">${pat.map(x => PIC(x)).join('')}<span class="pic qm">?</span></div>` }); };
+      const raroQ = () => { const [em, nom] = R.pick(RAROS), [h1, h2] = R.sample(['pumpkin', 'ghost', 'bat', 'skull', 'cat', 'hat'], 2);
+        return pics(R, '¿Qué dibujo NO es de Halloween?', 'raro', [h1, h2], { raro: `<span class="emo">${em}</span>`, [h1]: PIC(h1), [h2]: PIC(h2) }); };
+      const animalQ = () => { const [k, nom] = R.pick(ANIMALES); const otros = ANIMALES.filter(x => x[0] !== k).map(x => x[0]);
+        return pics(R, `¿Dónde está ${nom}?`, k, otros, Object.fromEntries([k, ...otros].map(x => [x, PIC(x)]))); };
+      const vocalQ = () => { const vs = edad === 4 ? ['A', 'E', 'I', 'O', 'U'] : null;
+        if (edad === 4) { const v = R.sample(vs, 3); return pics(R, `Toca la letra ${v[0]}`, v[0], v.slice(1), Object.fromEntries(v.map(x => [x, `<b class="numop">${x}</b>`])), `Toca la letra ${v[0]}`); }
+        const [v, em, w] = R.pick(VOCAL_PIC), ot = R.sample(['A', 'E', 'I', 'O', 'U'].filter(x => x !== v), 2);
+        return Object.assign(pics(R, `¿Con qué letra empieza ${w}?`, v, ot, Object.fromEntries([v, ...ot].map(x => [x, `<b class="numop">${x}</b>`])), `¿Con qué letra empieza ${w.toLowerCase()}?`), { html: `<div class="serie"><span class="emo big">${em}</span></div>` }); };
+      const caraQ = () => pics(R, '¿Qué fantasma está CONTENTO?', 'feliz', ['triste'], { feliz: '<span class="emo">😄</span>', triste: '<span class="emo">😢</span>' });
+      const p3 = { 3: [animalQ, caraQ], 4: [vocalQ, animalQ], 5: [vocalQ, vocalQ] }[edad];
+      return [
+        { titulo: 'Las calabazas contadoras', icono: 'pumpkin', instr: 'Cuenta los dibujos y toca el número.', pista: 'Toca cada dibujo con el dedo mientras cuentas: uno, dos, tres…', preguntas: [contar(R)], secreto: sec(R) },
+        { titulo: 'Los colores del caldero', icono: 'cauldron', instr: 'Escucha y toca el color.', pista: 'Pídele ayuda a tu compañero o a tu profe.', preguntas: (() => { const qs = []; let g = 0; while (qs.length < (edad > 3 ? 2 : 1) && g++ < 30) { const q = colQ(); if (!qs.some(x => x.a === q.a)) qs.push(q); } return qs; })(), secreto: sec(R) },
+        { titulo: 'Las formas del fantasma', icono: 'ghost', instr: 'Escucha y toca la forma o el tamaño.', pista: 'El círculo es redondo como la luna llena.', preguntas: [formQ(), sizeQ()], secreto: sec(R) },
+        { titulo: 'El bosque de las series', icono: 'bat', instr: 'Mira los dibujos con atención.', pista: 'Di los dibujos en voz alta: calabaza, fantasma, calabaza…', preguntas: [serieQ(), raroQ()], secreto: sec(R) },
+        { titulo: 'La luna parlanchina', icono: 'moon', instr: 'Escucha y toca la respuesta.', pista: 'Escucha otra vez pulsando el altavoz 🔊.', preguntas: p3.map(f => f()).filter((q, k, a) => k === 0 || q.q !== a[0].q), secreto: sec(R) }
+      ];
+    }
+  };
+}
+ESCAPES.push(infantil(3), infantil(4), infantil(5));
+
 /* Cada partida 1-50 tiene un código DISTINTO (si dos coinciden, se busca otra variante) */
 const _semillas = {};
 function semillaReal(E, seed) {
@@ -277,7 +342,7 @@ function semillaReal(E, seed) {
     const usados = new Set(), map = [];
     for (let s = 1; s <= PARTIDAS; s++) {
       let k = s, c;
-      do { c = E.build(mkRng(k, E.id)).map(r => r.secreto.a).join(''); if (usados.has(c)) k += 1000; else break; } while (true);
+      do { c = E.build(mkRng(k, E.id)).map(r => r.secreto.a).join(''); if (k > 50000) break; if (usados.has(c)) k += 1000; else break; } while (true);
       usados.add(c); map[s] = k;
     }
     _semillas[E.id] = map;
@@ -286,3 +351,4 @@ function semillaReal(E, seed) {
 }
 function buildRetos(E, seed) { return E.build(mkRng(semillaReal(E, seed), E.id)); }
 function codigo(E, seed) { return buildRetos(E, seed).map(r => r.secreto.a).join(''); }
+const cicloTxt = e => e.ciclo === 'inf' ? `Infantil ${e.edad} años` : e.ciclo.replace('-', '.º y ') + '.º';

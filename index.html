@@ -201,13 +201,30 @@ footer a{color:var(--purple)}
 
 @media (max-width:700px){
   .intro-grid{grid-template-columns:1fr}.intro-grid .who{width:120px;margin:0 auto}
-  .path{grid-template-columns:repeat(5,1fr);gap:4px}.stop:nth-child(even){margin-top:30px}
+  .path{display:flex;flex-wrap:wrap;justify-content:center;gap:22px 10px}
+  .stop{width:calc(33.3% - 10px)}.stop:nth-child(even){margin-top:0}
+  .tomb{width:100%;max-width:110px}.stop .lbl{max-width:100%;font-size:13px}
+  .stop.solved .tomb::after{width:32px;height:32px;font-size:20px;right:-6px;bottom:-10px}
+  .hero-logo{width:96px;border-radius:20px}.topbar{align-items:flex-start}
+  .chip{font-size:13px;padding:5px 10px}.tb-btns{gap:6px}
+  .mapa{padding:16px 0 4px}
   .tomb .num{width:28px;height:28px;font-size:17px;top:-12px}
   .q{grid-template-columns:40px 1fr}.q .let{width:38px;height:38px;font-size:20px}
   .q input{grid-column:2/3;width:100%}
   .wheel .dig{width:52px;height:70px;font-size:44px}.wheel button{width:48px}
-  #deco .web{width:110px}.logo{height:48px}
+  #deco .web{width:110px}.logo{height:40px}
 }
+.sw{display:inline-block;width:62px;height:62px;border-radius:50%;border:4px solid var(--ink);vertical-align:middle}
+.shp{width:66px;height:66px;display:block}
+.pic{display:inline-block;width:70px;vertical-align:middle}
+.pic.qm{display:inline-grid;place-items:center;height:70px;border:4px dashed var(--purple);border-radius:16px;font:400 46px Creepster;color:var(--purple)}
+.emo{font-size:58px;line-height:1;display:inline-block}.emo.big{font-size:90px}
+.numop{font:400 46px Creepster;color:var(--orange);-webkit-text-stroke:1.5px var(--ink);min-width:44px;display:inline-block;text-align:center}
+.opt.img{padding:8px 12px;background:#fff}
+.opt.img.sel{background:#ede9fe;outline:5px solid var(--purple)}
+.serie{grid-column:2/4;display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0}
+.voz{border:3px solid var(--ink);background:#fde68a;border-radius:50%;width:44px;height:44px;font-size:22px;cursor:pointer;box-shadow:0 3px 0 var(--ink);flex:none;margin-right:6px;vertical-align:middle}
+@media (max-width:700px){.serie{flex-wrap:nowrap;gap:4px}.serie .pic{width:42px}.serie .pic.qm{height:42px;font-size:28px;border-width:3px}.pic{width:54px}.sw{width:50px;height:50px}.shp{width:54px;height:54px}.emo{font-size:46px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 </head>
@@ -219,7 +236,8 @@ footer a{color:var(--purple)}
   <div class="topbar">
     <img src="logo.jpg" alt="CEIP Capitulaciones" class="logo" id="logo" onerror="this.style.display='none'">
     <div class="tb-btns">
-      <button class="chip" id="btnSound" title="Sonido">🔊 Sonido</button>
+      <button class="chip" id="btnMusic" title="Música de fondo" onclick="music=!music;LS.set('erh_music',music);paintMusic();music?musicStart():musicStop()">🎵 Música</button>
+      <button class="chip" id="btnSound" title="Efectos de sonido">🔊 Sonido</button>
       <button class="chip" onclick="showRanking()">🏆 Récords</button>
       <button class="chip" onclick="openProfe()">🧑‍🏫 Profe</button>
       <button class="chip hidden-home" id="btnHome" onclick="goHome()" style="display:none">🏚️ Inicio</button>
@@ -253,6 +271,7 @@ footer a{color:var(--purple)}
         <div class="who" id="introWho"></div>
         <div>
           <h2 class="spooky" id="introTitle" style="font-size:clamp(30px,5vw,48px);color:var(--purple);line-height:1;margin-bottom:10px"></h2>
+          <button class="btn white" id="introVoz" style="display:none;margin-bottom:8px;font-size:17px;padding:8px 14px" onclick="hablar(E.historia)">🔊 Escuchar la historia</button>
           <p class="story" id="introStory"></p>
         </div>
       </div>
@@ -353,8 +372,8 @@ const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 };
-const AREA = { mates: { n: 'Matemáticas', c: '#f97316', e: '🔢' }, lengua: { n: 'Lengua', c: '#7c3aed', e: '📖' } };
-const CICLOS = [['1-2', '1.º y 2.º'], ['3-4', '3.º y 4.º'], ['5-6', '5.º y 6.º']];
+const AREA = { mates: { n: 'Matemáticas', c: '#f97316', e: '🔢' }, lengua: { n: 'Lengua', c: '#7c3aed', e: '📖' }, infantil: { n: 'Infantil', c: '#0ea5e9', e: '🧸' } };
+const CICLOS = [['inf', 'Infantil'], ['1-2', '1.º y 2.º'], ['3-4', '3.º y 4.º'], ['5-6', '5.º y 6.º']];
 const LETTERS = 'ABCDEFGH';
 const fmt = s => { s = Math.max(0, Math.floor(s)); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
 function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 2400); }
@@ -379,6 +398,42 @@ const SFX = {
 function paintSound() { $('#btnSound').textContent = sound ? '🔊 Sonido' : '🔇 Sonido'; }
 $('#btnSound').onclick = () => { sound = !sound; LS.set('erh_sound', sound); paintSound(); SFX.click(); };
 paintSound();
+
+/* ================= Voz (Infantil) ================= */
+function hablar(t) {
+  try { if (!('speechSynthesis' in window)) return; speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(t.replace(/[¿¡«»]/g, '')); u.lang = 'es-ES'; u.rate = .88; u.pitch = 1.15;
+    const v = speechSynthesis.getVoices().find(v => /^es(-|_)ES/i.test(v.lang)) || speechSynthesis.getVoices().find(v => /^es/i.test(v.lang)); if (v) u.voice = v;
+    speechSynthesis.speak(u); } catch (e) {}
+}
+
+/* ================= Música de fondo (suave, generada) ================= */
+let music = LS.get('erh_music', true), mTimer = null, mNext = 0, mStep = 0, mGain, mDelay;
+const NOTE = n => { const m = n.match(/^([A-G])(#?)(\d)$/); const st = { C: -9, D: -7, E: -5, F: -4, G: -2, A: 0, B: 2 }[m[1]] + (m[2] ? 1 : 0) + (m[3] - 4) * 12; return 440 * Math.pow(2, st / 12); };
+const MEL = ['A4', 'C5', 'E5', 'A5', 'G5', 'E5', 'C5', 'E5', 'F4', 'A4', 'C5', 'F5', 'E5', 'C5', 'A4', 'C5', 'D4', 'F4', 'A4', 'D5', 'C5', 'A4', 'F4', 'A4', 'E4', 'G#4', 'B4', 'E5', 'D5', 'B4', 'G#4', 'E4'];
+const BAJO = ['A2', 'F2', 'D2', 'E2'];
+function mNote(f, t, d, vol, type) {
+  const o = AC.createOscillator(), g = AC.createGain(); o.type = type; o.frequency.value = f;
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .03); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+  o.connect(g); g.connect(mGain); o.start(t); o.stop(t + d + .05);
+}
+function musicStart() {
+  if (!music || mTimer || !ac()) return; if (AC.state === 'suspended') AC.resume();
+  if (!mGain) { mGain = AC.createGain(); mGain.gain.value = .55; mDelay = AC.createDelay(); mDelay.delayTime.value = .42; const fb = AC.createGain(); fb.gain.value = .32; mGain.connect(AC.destination); mGain.connect(mDelay); mDelay.connect(fb); fb.connect(mDelay); fb.connect(AC.destination); }
+  mNext = AC.currentTime + .1; const paso = .34;
+  mTimer = setInterval(() => {
+    while (mNext < AC.currentTime + .4) {
+      const i = mStep % MEL.length;
+      mNote(NOTE(MEL[i]), mNext, 1.1, .045, 'sine'); mNote(NOTE(MEL[i]) * 2, mNext, .5, .008, 'triangle');
+      if (i % 8 === 0) { const b = NOTE(BAJO[(i / 8) % 4]); mNote(b, mNext, paso * 8, .05, 'triangle'); mNote(b * 1.5, mNext, paso * 8, .018, 'sine'); }
+      mNext += paso; mStep++;
+    }
+  }, 120);
+}
+function musicStop() { clearInterval(mTimer); mTimer = null; }
+function paintMusic() { $('#btnMusic').textContent = music ? '🎵 Música' : '🔇 Música'; }
+document.addEventListener('pointerdown', function first() { if (music) musicStart(); document.removeEventListener('pointerdown', first); }, { once: true });
+document.addEventListener('visibilitychange', () => { if (document.hidden) musicStop(); else if (music && AC) musicStart(); });
 
 /* ================= Decoración ================= */
 (function deco() {
@@ -428,7 +483,7 @@ function renderHome() {
       <span class="area" style="background:${a.c}">${a.e} ${a.n}</span>${badge}
       <div class="who">${ART[e.personaje]}</div>
       <h3 style="color:${e.color}">${e.titulo}</h3>
-      <p>5 retos · 1 candado mágico</p></div>`;
+      <p>${e.ciclo === 'inf' ? `${e.edad} años · ` : ''}5 retos · 1 candado mágico</p></div>`;
   }).join('');
 }
 function setCiclo(k) { ciclo = k; LS.set('erh_ciclo', k); SFX.click(); renderHome(); }
@@ -452,6 +507,7 @@ function openEscape(id) {
   $('#introWho').innerHTML = ART[E.personaje];
   $('#introTitle').textContent = E.titulo; $('#introTitle').style.color = E.color;
   typeText($('#introStory'), E.historia);
+  $('#introVoz').style.display = E.voz ? '' : 'none';
   $('#team').value = saved && saved.team ? saved.team : ''; $('#partida').value = '';
   show('intro');
 }
@@ -496,9 +552,11 @@ function openReto(i) {
     if (q.visual && q.visual.icon) vis = `<div class="vis">${Array.from({ length: q.visual.n }, () => `<div class="ico ${q.visual.big ? 'big' : ''}">${ART[q.visual.icon]}</div>`).join('')}</div>`;
     if (q.visual && q.visual.clock) vis = `<div class="vis">${clockSVG(...q.visual.clock)}</div>`;
     const lab = q.secret ? '🗝️' : LETTERS[k];
-    const qtxt = q.secret ? `<span class="secret-tag">Número secreto del reto ${i + 1}</span>${q.q}` : q.q;
+    const vozBtn = E.voz ? `<button class="voz" onclick="event.stopPropagation();hablar(${JSON.stringify(q.voz || q.q).replace(/"/g, '&quot;')})" aria-label="Escuchar">🔊</button>` : '';
+    const qtxt = (q.secret ? `<span class="secret-tag">Número secreto del reto ${i + 1}</span>` : '') + vozBtn + q.q;
+    if (q.html) vis = q.html + vis;
     const input = q.tipo === 'opc'
-      ? `<div class="opts">${q.op.map(o => `<button class="opt" data-v="${o.replace(/"/g, '&quot;')}" onclick="pick(this)">${o}</button>`).join('')}</div>`
+      ? `<div class="opts">${q.op.map(o => `<button class="opt ${q.lab ? 'img' : ''}" data-v="${o.replace(/"/g, '&quot;')}" onclick="pick(this)" aria-label="${o}">${q.lab ? q.lab[o] : o}</button>`).join('')}</div>`
       : `<input inputmode="decimal" autocomplete="off" aria-label="Respuesta" onkeydown="if(event.key==='Enter')comprobar()">`;
     return `<div class="q ${q.secret ? 'secret' : ''}" data-k="${k}"><div class="let">${lab}</div><div class="txt">${qtxt}</div>${q.tipo === 'opc' ? '' : input}${vis}${q.tipo === 'opc' ? input : ''}</div>`;
   }).join('');
@@ -506,6 +564,7 @@ function openReto(i) {
     document.querySelectorAll('#qs .q').forEach((el, k) => { el.classList.add('ok'); fill(el, all[k]); });
   }
   show('reto');
+  if (E.voz && !st.solved[i]) hablar(r.instr + '. ' + (all[0].voz || all[0].q));
   const first = document.querySelector('#qs input'); if (first && !st.solved[i] && matchMedia('(pointer:fine)').matches) first.focus();
 }
 function fill(el, q) {
@@ -558,7 +617,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter') abrir();
 });
 function abrir() {
-  const ok = RET.every((r, i) => r.secreto.a === code[i]);
+  const ok = RET.every((r, i) => Number(r.secreto.a) === code[i]);
   if (!ok) { SFX.bad(); const w = $('#wheels'); w.classList.remove('bad'); void w.offsetWidth; w.classList.add('bad'); toast('🦇 ¡Ese no es el código! Mirad las cifras del mapa.'); return; }
   $('#biglock').classList.add('open'); SFX.open();
   st.done = true; st.end = Date.now(); save(); clearInterval(timerInt); tick();
@@ -577,7 +636,7 @@ function showRanking() {
   const body = ESCAPES.map(e => {
     const r = recs.filter(x => x.id === e.id).sort((a, b) => a.t - b.t).slice(0, 5);
     if (!r.length) return '';
-    return `<h3 class="spooky" style="color:${e.color};font-size:24px;margin:12px 0 4px">${e.titulo} <small style="font-family:Fredoka;font-size:14px;color:#6b7280">(${e.ciclo.replace('-', '.º y ')}.º)</small></h3>
+    return `<h3 class="spooky" style="color:${e.color};font-size:24px;margin:12px 0 4px">${e.titulo} <small style="font-family:Fredoka;font-size:14px;color:#6b7280">(${cicloTxt(e)})</small></h3>
       <table>${r.map((x, i) => `<tr><td>${['🥇', '🥈', '🥉', '4.º', '5.º'][i]}</td><td>${x.team}${x.p ? ` <small style="opacity:.6">(partida ${x.p})</small>` : ''}</td><td><b>${fmt(x.t)}</b></td><td style="opacity:.6">${x.date}</td></tr>`).join('')}</table>`;
   }).join('');
   modal(`<h2>🏆 Récords</h2>${body || '<p style="font-size:19px">Todavía no ha escapado ningún equipo en este dispositivo. ¿Seréis los primeros?</p>'}
@@ -596,7 +655,7 @@ function checkPin() {
   const rows = ESCAPES.map(e => {
     const cur = LS.get(stKey(e.id), null), act = cur && cur.seed && !cur.done ? cur.seed : 0;
     const grid = Array.from({ length: PARTIDAS }, (_, k) => `<span style="display:inline-block;min-width:96px;padding:3px 6px;margin:2px;border-radius:8px;background:${k + 1 === act ? '#fed7aa' : '#f5f3ff'};font-size:14px"><b>${k + 1}.</b> <span style="font:400 19px Creepster;letter-spacing:2px">${codigo(e, k + 1)}</span></span>`).join('');
-    return `<details style="margin:8px 0;border:3px solid ${e.color};border-radius:14px;padding:8px 10px"><summary style="cursor:pointer;font-weight:700;color:${e.color}">${e.titulo} <small style="color:#6b7280">(${AREA[e.area].n} · ${e.ciclo.replace('-', '.º y ')}.º)</small>${act ? ` · <span style="color:#c2410c">en juego: partida ${act} → ${codigo(e, act)}</span>` : ''}</summary><div style="margin-top:6px">${grid}</div></details>`;
+    return `<details style="margin:8px 0;border:3px solid ${e.color};border-radius:14px;padding:8px 10px"><summary style="cursor:pointer;font-weight:700;color:${e.color}">${e.titulo} <small style="color:#6b7280">(${AREA[e.area].n} · ${cicloTxt(e)})</small>${act ? ` · <span style="color:#c2410c">en juego: partida ${act} → ${codigo(e, act)}</span>` : ''}</summary><div style="margin-top:6px">${grid}</div></details>`;
   }).join('');
   modal(`<h2>🗝️ Códigos (50 partidas por escape room)</h2>${rows}
     <ul><li>Cada reto debe tener <b>todas</b> las respuestas bien para dar su cifra.</li><li>Cada escape room tiene <b>50 partidas distintas</b> (otras preguntas y otro código). Sale una al azar y no se repite hasta jugar las 50 en ese dispositivo.</li><li>Cada pista suma 30 s al tiempo.</li><li>El progreso se guarda en el dispositivo: si se cierra, se puede continuar.</li><li>Ideal en pizarra digital por equipos o en tablets.</li></ul>
@@ -624,14 +683,15 @@ function confetti(n) {
 }
 
 /* ================= Novedades (una vez por dispositivo) ================= */
-const NOV_VER = 'erh_novedades_v4';
+const NOV_VER = 'erh_novedades_v5';
 if (!LS.get(NOV_VER, false)) {
   setTimeout(() => !LS.get(NOV_VER, false) && modal(`<h2>🎃 ¡Novedades!</h2>
     <p style="font-size:19px;line-height:1.5">Llega el <b>Escape Room de Halloween</b> del CEIP Capitulaciones:</p>
-    <ul><li>6 escape rooms: Lengua y Matemáticas para 1.º-2.º, 3.º-4.º y 5.º-6.º.</li><li>5 retos con cifra secreta + candado mágico final.</li><li>Pistas, cronómetro y récords por equipos.</li><li>Funciona sin Internet una vez instalada.</li><li>🆕 Logo de Halloween del cole y fotos del CEIP Capitulaciones embrujado.</li><li>🆕 La bruja Petra estrena cara nueva.</li><li>🆕 Fotos de fondo del cole más visibles.</li><li>🆕 <b>50 partidas distintas</b> en cada escape room: cambian las preguntas y el código del candado.</li></ul>
+    <ul><li>6 escape rooms: Lengua y Matemáticas para 1.º-2.º, 3.º-4.º y 5.º-6.º.</li><li>5 retos con cifra secreta + candado mágico final.</li><li>Pistas, cronómetro y récords por equipos.</li><li>Funciona sin Internet una vez instalada.</li><li>🆕 Logo de Halloween del cole y fotos del CEIP Capitulaciones embrujado.</li><li>🆕 La bruja Petra estrena cara nueva.</li><li>🆕 <b>Infantil</b>: escape rooms para 3, 4 y 5 años con dibujos y voz 🔊.</li><li>🆕 Música suave de fondo (botón 🎵 para quitarla).</li><li>🆕 Mejor vista en el móvil.</li><li>🆕 Fotos de fondo del cole más visibles.</li><li>🆕 <b>50 partidas distintas</b> en cada escape room: cambian las preguntas y el código del candado.</li></ul>
     <div class="actions"><button class="btn big" onclick="LS.set('${NOV_VER}',true);closeModal()">¡A jugar! 👻</button></div>`), 600);
 }
 
+paintMusic();
 renderHome();
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 </script>
